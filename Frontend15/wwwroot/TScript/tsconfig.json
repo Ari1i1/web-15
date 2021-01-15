@@ -1,0 +1,25 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "es5",
+    "skipLibCheck": true,
+    "jsx": "react",
+    "lib": [
+      "dom",
+      "es5",
+      "scripthost",
+      "es2015.promise",
+      "es2015.iterable",
+      "es2015.collection"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "bin",
+    "obj"
+  ]
+}
