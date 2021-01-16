@@ -65,6 +65,13 @@ var Game = /** @class */ (function () {
     }
     Game.prototype.StartGame = function () {
         //if ()
+        // change progress bar
+        var check = $("#progPerk1").attr("aria-valuenow");
+        var current_progress = check;
+        $('#AttackButton').on('click', function () {
+            current_progress += 10;
+            $("#progPerk1").css("width", current_progress + "%").attr("aria-valuenow", current_progress);
+        });
         /*const field = document.querySelector('.field');
         let heightWindow = document.documentElement.clientHeight;
         let widthWindow = document.documentElement.clientWidth;
@@ -92,7 +99,6 @@ var Game = /** @class */ (function () {
                 $(this).css('width', siz + '%');
             });
         });
-        // ...
     };
     return Game;
 }());
