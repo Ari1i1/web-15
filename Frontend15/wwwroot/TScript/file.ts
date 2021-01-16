@@ -1,6 +1,6 @@
 ﻿window.onload = function () {
-    let isChosen = false;
-    let chosenFighter = null;  
+    let isChosen: boolean = false;
+    let chosenFighter: string;  
     document.getElementById('Johnny').addEventListener('click', () => {
         if (isChosen != true) {
             $("#Message").collapse('show');
@@ -39,11 +39,19 @@
     });
     document.getElementById('SelectButton').addEventListener('click', () => {
         $('#FighterPopup').modal('hide');
-        let game = new Game(chosenFighter);
+        let player: Character;
+        if (chosenFighter == 'Johnny') {
+            player = new Johnny(`${chosenFighter}`, 100, 100, 'I WILL WIN!!!!');
+        }
+        else if (chosenFighter == 'BattleJoe') {
+            player = new BattleJoe(`${chosenFighter}`, 100, 100, "I WILL KILL Y'ALL!!!!");
+        }
+        else if (chosenFighter == 'Token') {
+            player = new Token(`${chosenFighter}`, 100, 100, 'I AM UR DEATH!!!!');
+        }
+        let game: Game = new Game(player);
         game.StartGame();
-       // document.getElementById('HeroName').innerHTML = `${chosenFighter}`;
     });
-
 
 } 
 
@@ -55,6 +63,10 @@ class Game {
 
         //if ()
         // change progress bar
+
+        this.Char.Greet();
+        this.Char.GetPerks();
+
         let curr_prog_attack = 0;
         $('#AttackButton').on('click', function () {
             var check: string;
@@ -64,39 +76,17 @@ class Game {
             if (curr_prog_attack <= 100) {
                 $("#progPerk1").css("width", curr_prog_attack + "%").attr("aria-valuenow", curr_prog_attack)
             }
+            else if (curr_prog_attack > 100) {
+                curr_prog_attack = 100;
+                $("#progPerk1").css("width", curr_prog_attack + "%").attr("aria-valuenow", curr_prog_attack)
+            }
         });
 
-        
-        /*const field = document.querySelector('.field');
-        let heightWindow = document.documentElement.clientHeight;
-        let widthWindow = document.documentElement.clientWidth;
-        let player = document.createElement("img");
-        player.src = "../img/Johnny.png";
-        player.className = "img";
-        let top = Math.random() * (heightWindow - 120);
-        let left = Math.random() * (widthWindow - 120);
-        player.style.top = top + 'px';
-        player.style.left = left + 'px';
-        field.appendChild(player);*/
     }
     public isHeroTurn: boolean = true;
     public Enemies: Unit[] = [];
     public NextStep(): void {
-        document.getElementById('Perk1Use').addEventListener('click', () => {
-           //our progress bar 
-            $('.Perk1Use').each(function () {
-                let now: any = $(this).attr('aria-valuenow');
-                let siz = now - 10;
-                $(this).css('width', siz + '%');
-            });
-            // evil pb
-            $('.Perk1Use').each(function () {
-                let now: any = $(this).attr('aria-valuenow');
-                let siz = now - 10;
-                $(this).css('width', siz + '%');
-            });
-        });                                                    
-       
+                                                         
     }
 }
 
@@ -104,22 +94,22 @@ class Unit {
     constructor(public name: string, protected MaxHP: number, protected MaxMana: number) {
 
     }
-    /*public MoveSet: Move[] = [];
+    public MoveSet: Move[] = [];
     private _HP: number;
     public get hp(): number {
-        //...
+        return this._HP;
     }
     public set hp(n: number) {
-        //...
+        this._HP = this.MaxHP;
     
     }
     private _mana: number;
     public get mana(): number {
-        //...
+        return this._mana;
     }
     public set mana(n: number) {
-        //...
-    }*/
+        this._mana = this.MaxMana;
+    }
 
 }
 
@@ -129,29 +119,46 @@ class Enemy extends Unit {
     }
 }
 class Move {
-    constructor(public name: string, public description: string) {
+    constructor(public name: string, public description: string, public activator: string) {
         //...
     }
-    public Execute(targets: Unit[]): void {
+    public Greet(): void {
+    }
+    public Execute(/*targets: Unit[]*/): void {
         //...
     }
 }
 
 //Пример способности
-/*class Sacrifice extends Move {
-    constructor() {
-        super();
+class Sacrifice extends Move {
+    constructor(public name: string, public description: string, public activator: string) {
+        super(name, description, activator);
     }
-    public Execute(targets: Unit[]): void {
-            
+    public Greet(): void {
+        $('#Perk1Title').html(`${this.name}`);
+        $('#Perk1Desc').html(`${this.description}`);
     }
-}*/
+    public Execute(/*targets: Unit[]*/): void {
+        let curr_prog_perk1 = 0;
+        $(`${this.activator}`).on('click', function () {
+            var check: string;
+            check = $("#progPerk1").attr("aria-valuenow");
+            curr_prog_perk1 = +check;
+            if (curr_prog_perk1 >= 100) {
+                curr_prog_perk1 = 0;
+                $("#progPerk1").css("width", curr_prog_perk1 + "%").attr("aria-valuenow", curr_prog_perk1)
+            }
+        });
+    }
+}
+
 class Character extends Unit {
-    constructor(name: string, MaxHP: number, MaxMana: number, protected selector: string, public motto: string) {
+    constructor(name: string, MaxHP: number, MaxMana: number,/* protected selector: string,*/ public motto: string) {
         super(name, MaxHP, MaxMana);
     }
     public Greet(): void {
-        //...
+        $('#HeroName').html(`${this.name}`);
+        $('#MottoText').html(`${this.motto}`);
     }
     public ActSelected(): void {
         //...
@@ -165,19 +172,31 @@ class Character extends Unit {
     protected _DeHighlight(): void {
         //...
     }
+    public GetPerks(): void {
+        
+        let rand: number = 1;
+        if (rand == 1) {
+            let perkID: string = '#Perk1Use';
+            let firstPerk: Move = new Sacrifice('Sacrifice', 'Lose HP, get Mana', `${perkID}`);
+            firstPerk.Greet();
+            firstPerk.Execute();
+        }
+    }
 }
 class Johnny extends Character {
-    constructor(public name: string, MaxHP: number, MaxMana: number, protected selector: string, public motto: string) {
-        super(name, MaxHP, MaxMana, selector, motto);
+    constructor(public name: string, MaxHP: number, MaxMana: number,/* protected selector: string,*/ public motto: string) {
+        super(name, MaxHP, MaxMana, motto);
     }
+
     public ActSelected(): void {
         //...
     }
 }
 class Token extends Character {
-    constructor(public name: string, MaxHP: number, MaxMana: number, protected selector: string, public motto: string) {
-        super(name, MaxHP, MaxMana, selector, motto);
+    constructor(public name: string, MaxHP: number, MaxMana: number, /*protected selector: string,*/ public motto: string) {
+        super(name, MaxHP, MaxMana, motto);
     }
+
     public ActSelected(): void {
         //...
     }
@@ -186,9 +205,10 @@ class Token extends Character {
     }
 }
 class BattleJoe extends Character {
-    constructor(public name: string, MaxHP: number, MaxMana: number, protected selector: string, public motto: string) {
-        super(name, MaxHP, MaxMana, selector, motto);
+    constructor(public name: string, MaxHP: number, MaxMana: number, /*protected selector: string,*/ public motto: string) {
+        super(name, MaxHP, MaxMana, motto);
     }
+
     public ActSelected(): void {
         //...
     }

@@ -13,7 +13,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 window.onload = function () {
     var isChosen = false;
-    var chosenFighter = null;
+    var chosenFighter;
     document.getElementById('Johnny').addEventListener('click', function () {
         if (isChosen != true) {
             $("#Message").collapse('show');
@@ -52,9 +52,18 @@ window.onload = function () {
     });
     document.getElementById('SelectButton').addEventListener('click', function () {
         $('#FighterPopup').modal('hide');
-        var game = new Game(chosenFighter);
+        var player;
+        if (chosenFighter == 'Johnny') {
+            player = new Johnny("" + chosenFighter, 100, 100, 'I WILL WIN!!!!');
+        }
+        else if (chosenFighter == 'BattleJoe') {
+            player = new BattleJoe("" + chosenFighter, 100, 100, "I WILL KILL Y'ALL!!!!");
+        }
+        else if (chosenFighter == 'Token') {
+            player = new Token("" + chosenFighter, 100, 100, 'I AM UR DEATH!!!!');
+        }
+        var game = new Game(player);
         game.StartGame();
-        // document.getElementById('HeroName').innerHTML = `${chosenFighter}`;
     });
 };
 var Game = /** @class */ (function () {
@@ -66,6 +75,8 @@ var Game = /** @class */ (function () {
     Game.prototype.StartGame = function () {
         //if ()
         // change progress bar
+        this.Char.Greet();
+        this.Char.GetPerks();
         var curr_prog_attack = 0;
         $('#AttackButton').on('click', function () {
             var check;
@@ -75,34 +86,13 @@ var Game = /** @class */ (function () {
             if (curr_prog_attack <= 100) {
                 $("#progPerk1").css("width", curr_prog_attack + "%").attr("aria-valuenow", curr_prog_attack);
             }
+            else if (curr_prog_attack > 100) {
+                curr_prog_attack = 100;
+                $("#progPerk1").css("width", curr_prog_attack + "%").attr("aria-valuenow", curr_prog_attack);
+            }
         });
-        /*const field = document.querySelector('.field');
-        let heightWindow = document.documentElement.clientHeight;
-        let widthWindow = document.documentElement.clientWidth;
-        let player = document.createElement("img");
-        player.src = "../img/Johnny.png";
-        player.className = "img";
-        let top = Math.random() * (heightWindow - 120);
-        let left = Math.random() * (widthWindow - 120);
-        player.style.top = top + 'px';
-        player.style.left = left + 'px';
-        field.appendChild(player);*/
     };
     Game.prototype.NextStep = function () {
-        document.getElementById('Perk1Use').addEventListener('click', function () {
-            //our progress bar 
-            $('.Perk1Use').each(function () {
-                var now = $(this).attr('aria-valuenow');
-                var siz = now - 10;
-                $(this).css('width', siz + '%');
-            });
-            // evil pb
-            $('.Perk1Use').each(function () {
-                var now = $(this).attr('aria-valuenow');
-                var siz = now - 10;
-                $(this).css('width', siz + '%');
-            });
-        });
     };
     return Game;
 }());
@@ -111,7 +101,28 @@ var Unit = /** @class */ (function () {
         this.name = name;
         this.MaxHP = MaxHP;
         this.MaxMana = MaxMana;
+        this.MoveSet = [];
     }
+    Object.defineProperty(Unit.prototype, "hp", {
+        get: function () {
+            return this._HP;
+        },
+        set: function (n) {
+            this._HP = this.MaxHP;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(Unit.prototype, "mana", {
+        get: function () {
+            return this._mana;
+        },
+        set: function (n) {
+            this._mana = this.MaxMana;
+        },
+        enumerable: false,
+        configurable: true
+    });
     return Unit;
 }());
 var Enemy = /** @class */ (function (_super) {
@@ -126,35 +137,57 @@ var Enemy = /** @class */ (function (_super) {
     return Enemy;
 }(Unit));
 var Move = /** @class */ (function () {
-    function Move(name, description) {
+    function Move(name, description, activator) {
         this.name = name;
         this.description = description;
+        this.activator = activator;
         //...
     }
-    Move.prototype.Execute = function (targets) {
+    Move.prototype.Greet = function () {
+    };
+    Move.prototype.Execute = function ( /*targets: Unit[]*/) {
         //...
     };
     return Move;
 }());
 //Пример способности
-/*class Sacrifice extends Move {
-    constructor() {
-        super();
+var Sacrifice = /** @class */ (function (_super) {
+    __extends(Sacrifice, _super);
+    function Sacrifice(name, description, activator) {
+        var _this = _super.call(this, name, description, activator) || this;
+        _this.name = name;
+        _this.description = description;
+        _this.activator = activator;
+        return _this;
     }
-    public Execute(targets: Unit[]): void {
-            
-    }
-}*/
+    Sacrifice.prototype.Greet = function () {
+        $('#Perk1Title').html("" + this.name);
+        $('#Perk1Desc').html("" + this.description);
+    };
+    Sacrifice.prototype.Execute = function ( /*targets: Unit[]*/) {
+        var curr_prog_perk1 = 0;
+        $("" + this.activator).on('click', function () {
+            var check;
+            check = $("#progPerk1").attr("aria-valuenow");
+            curr_prog_perk1 = +check;
+            if (curr_prog_perk1 >= 100) {
+                curr_prog_perk1 = 0;
+                $("#progPerk1").css("width", curr_prog_perk1 + "%").attr("aria-valuenow", curr_prog_perk1);
+            }
+        });
+    };
+    return Sacrifice;
+}(Move));
 var Character = /** @class */ (function (_super) {
     __extends(Character, _super);
-    function Character(name, MaxHP, MaxMana, selector, motto) {
+    function Character(name, MaxHP, MaxMana, /* protected selector: string,*/ motto) {
         var _this = _super.call(this, name, MaxHP, MaxMana) || this;
-        _this.selector = selector;
         _this.motto = motto;
         return _this;
     }
     Character.prototype.Greet = function () {
-        //...
+        $('#HeroName').html("" + this.name);
+        $('#MottoText').html("" + this.motto);
     };
     Character.prototype.ActSelected = function () {
         //...
@@ -168,14 +201,22 @@ var Character = /** @class */ (function (_super) {
     Character.prototype._DeHighlight = function () {
         //...
     };
+    Character.prototype.GetPerks = function () {
+        var rand = 1;
+        if (rand == 1) {
+            var perkID = '#Perk1Use';
+            var firstPerk = new Sacrifice('Sacrifice', 'Lose HP, get Mana', "" + perkID);
+            firstPerk.Greet();
+            firstPerk.Execute();
+        }
+    };
     return Character;
 }(Unit));
 var Johnny = /** @class */ (function (_super) {
     __extends(Johnny, _super);
-    function Johnny(name, MaxHP, MaxMana, selector, motto) {
-        var _this = _super.call(this, name, MaxHP, MaxMana, selector, motto) || this;
+    function Johnny(name, MaxHP, MaxMana, /* protected selector: string,*/ motto) {
+        var _this = _super.call(this, name, MaxHP, MaxMana, motto) || this;
         _this.name = name;
-        _this.selector = selector;
         _this.motto = motto;
         return _this;
     }
@@ -186,10 +227,9 @@ var Johnny = /** @class */ (function (_super) {
 }(Character));
 var Token = /** @class */ (function (_super) {
     __extends(Token, _super);
-    function Token(name, MaxHP, MaxMana, selector, motto) {
-        var _this = _super.call(this, name, MaxHP, MaxMana, selector, motto) || this;
+    function Token(name, MaxHP, MaxMana, /*protected selector: string,*/ motto) {
+        var _this = _super.call(this, name, MaxHP, MaxMana, motto) || this;
         _this.name = name;
-        _this.selector = selector;
         _this.motto = motto;
         return _this;
     }
@@ -203,10 +243,9 @@ var Token = /** @class */ (function (_super) {
 }(Character));
 var BattleJoe = /** @class */ (function (_super) {
     __extends(BattleJoe, _super);
-    function BattleJoe(name, MaxHP, MaxMana, selector, motto) {
-        var _this = _super.call(this, name, MaxHP, MaxMana, selector, motto) || this;
+    function BattleJoe(name, MaxHP, MaxMana, /*protected selector: string,*/ motto) {
+        var _this = _super.call(this, name, MaxHP, MaxMana, motto) || this;
         _this.name = name;
-        _this.selector = selector;
         _this.motto = motto;
         return _this;
     }
