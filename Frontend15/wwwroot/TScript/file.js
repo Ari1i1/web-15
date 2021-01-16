@@ -51,9 +51,9 @@ window.onload = function () {
         $("#SelectButton").collapse('show');
     });
     document.getElementById('SelectButton').addEventListener('click', function () {
+        $('#FighterPopup').modal('hide');
         var game = new Game(chosenFighter);
         game.StartGame();
-        $('#FighterPopup').modal('hide');
         // document.getElementById('HeroName').innerHTML = `${chosenFighter}`;
     });
 };
@@ -66,11 +66,15 @@ var Game = /** @class */ (function () {
     Game.prototype.StartGame = function () {
         //if ()
         // change progress bar
-        var check = $("#progPerk1").attr("aria-valuenow");
-        var current_progress = check;
+        var curr_prog_attack = 0;
         $('#AttackButton').on('click', function () {
-            current_progress += 10;
-            $("#progPerk1").css("width", current_progress + "%").attr("aria-valuenow", current_progress);
+            var check;
+            check = $("#progPerk1").attr("aria-valuenow");
+            curr_prog_attack = +check;
+            curr_prog_attack += 10;
+            if (curr_prog_attack <= 100) {
+                $("#progPerk1").css("width", curr_prog_attack + "%").attr("aria-valuenow", curr_prog_attack);
+            }
         });
         /*const field = document.querySelector('.field');
         let heightWindow = document.documentElement.clientHeight;
