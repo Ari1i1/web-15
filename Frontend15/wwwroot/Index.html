@@ -72,13 +72,13 @@
                         <div class="col-12" id="HeroCard">
                             <div class="card">
                                 <div class="card-body">
-                                    <h5 class="card-title" id="HeroName"></h5>
+                                    <h5 class="card-title" id="HeroName">Hero Name.</h5>
                                     <p class="card-text" id="MottoText">Motto.</p>
                                     <div class="progress mana">
                                         <div class="progress-bar bg-danger hp" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
                                     <div class="progress mt-1">
-                                        <div class="progress-bar" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                                        <div id="HPBar" class="progress-bar" role="progressbar" style="width: 10%" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
                                 </div>
                             </div>
@@ -102,10 +102,10 @@
                                 <div class="col-12 mt-3">
                                     <div class="card">
                                         <div class="card-body">
-                                            <h5 class="card-title">Perk II</h5>
-                                            <p class="card-text">Info.</p>
+                                            <h5 class="card-title" id="Perk2Title">Perk II</h5>
+                                            <p class="card-text" id="Perk2Desc">Info.</p>
                                             <div class="progress">
-                                                <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                                <div id="progPerk2" class="progress-bar progress-bar-striped" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -116,10 +116,10 @@
                                 <div class="col-12 mt-3">
                                     <div class="card">
                                         <div class="card-body">
-                                            <h5 class="card-title">Perk III</h5>
-                                            <p class="card-text">Info.</p>
+                                            <h5 class="card-title" id="Perk3Title">Perk III</h5>
+                                            <p class="card-text" id="Perk3Desc">Info.</p>
                                             <div class="progress">
-                                                <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                                <div id="progPerk3" class="progress-bar progress-bar-striped" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -134,7 +134,7 @@
                 <div class="col-8 field">
                     <div style="text-align: left;" class="mt-4">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal" id="AttackButton">Attack</button>
-                        <button type="button" class="btn btn-primary">Heal</button>
+                        <button type="button" class="btn btn-primary" id="HealButton">Heal</button>
                     </div>
                 </div>
                 <div class="col-2" id="EnemySpace">

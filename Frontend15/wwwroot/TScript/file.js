@@ -73,11 +73,11 @@ var Game = /** @class */ (function () {
         this.Enemies = [];
     }
     Game.prototype.StartGame = function () {
-        //if ()
-        // change progress bar
         this.Char.Greet();
         this.Char.GetPerks();
         var curr_prog_attack = 0;
+        var curr_prog_attack2 = 0;
+        var curr_prog_attack3 = 0;
         $('#AttackButton').on('click', function () {
             var check;
             check = $("#progPerk1").attr("aria-valuenow");
@@ -90,7 +90,30 @@ var Game = /** @class */ (function () {
                 curr_prog_attack = 100;
                 $("#progPerk1").css("width", curr_prog_attack + "%").attr("aria-valuenow", curr_prog_attack);
             }
+            var check2;
+            check2 = $("#progPerk2").attr("aria-valuenow");
+            curr_prog_attack2 = +check2;
+            curr_prog_attack2 += 10;
+            if (curr_prog_attack2 <= 100) {
+                $("#progPerk2").css("width", curr_prog_attack2 + "%").attr("aria-valuenow", curr_prog_attack2);
+            }
+            else if (curr_prog_attack2 > 100) {
+                curr_prog_attack2 = 100;
+                $("#progPerk2").css("width", curr_prog_attack2 + "%").attr("aria-valuenow", curr_prog_attack2);
+            }
+            var check3;
+            check3 = $("#progPerk2").attr("aria-valuenow");
+            curr_prog_attack3 = +check3;
+            curr_prog_attack3 += 10;
+            if (curr_prog_attack3 <= 100) {
+                $("#progPerk3").css("width", curr_prog_attack3 + "%").attr("aria-valuenow", curr_prog_attack3);
+            }
+            else if (curr_prog_attack3 > 100) {
+                curr_prog_attack3 = 100;
+                $("#progPerk3").css("width", curr_prog_attack3 + "%").attr("aria-valuenow", curr_prog_attack3);
+            }
         });
+        this.Char.Heal();
     };
     Game.prototype.NextStep = function () {
     };
@@ -123,6 +146,22 @@ var Unit = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Unit.prototype.Heal = function () {
+        var cur_prog_heal = 0;
+        $('#HealButton').on('click', function () {
+            var now_prog_heal;
+            now_prog_heal = $("#HPBar").attr("aria-valuenow");
+            cur_prog_heal = +now_prog_heal;
+            cur_prog_heal += 10;
+            if (cur_prog_heal <= 100) {
+                $("#HPBar").css("width", cur_prog_heal + "%").attr("aria-valuenow", cur_prog_heal);
+            }
+            else if (cur_prog_heal > 100) {
+                cur_prog_heal = 100;
+                $("#HPBar").css("width", cur_prog_heal + "%").attr("aria-valuenow", cur_prog_heal);
+            }
+        });
+    };
     return Unit;
 }());
 var Enemy = /** @class */ (function (_super) {
@@ -178,6 +217,114 @@ var Sacrifice = /** @class */ (function (_super) {
     };
     return Sacrifice;
 }(Move));
+var SelfHealing = /** @class */ (function (_super) {
+    __extends(SelfHealing, _super);
+    function SelfHealing(name, description, activator) {
+        var _this = _super.call(this, name, description, activator) || this;
+        _this.name = name;
+        _this.description = description;
+        _this.activator = activator;
+        return _this;
+    }
+    SelfHealing.prototype.Greet = function () {
+        $('#Perk1Title').html("" + this.name);
+        $('#Perk1Desc').html("" + this.description);
+    };
+    SelfHealing.prototype.Execute = function ( /*targets: Unit[]*/) {
+        var curr_prog_perk1 = 0;
+        $("" + this.activator).on('click', function () {
+            var check;
+            check = $("#progPerk1").attr("aria-valuenow");
+            curr_prog_perk1 = +check;
+            if (curr_prog_perk1 >= 100) {
+                curr_prog_perk1 = 0;
+                $("#progPerk1").css("width", curr_prog_perk1 + "%").attr("aria-valuenow", curr_prog_perk1);
+            }
+        });
+    };
+    return SelfHealing;
+}(Move));
+var StongAttackOneTarget = /** @class */ (function (_super) {
+    __extends(StongAttackOneTarget, _super);
+    function StongAttackOneTarget(name, description, activator) {
+        var _this = _super.call(this, name, description, activator) || this;
+        _this.name = name;
+        _this.description = description;
+        _this.activator = activator;
+        return _this;
+    }
+    StongAttackOneTarget.prototype.Greet = function () {
+        $('#Perk2Title').html("" + this.name);
+        $('#Perk2Desc').html("" + this.description);
+    };
+    StongAttackOneTarget.prototype.Execute = function ( /*targets: Unit[]*/) {
+        var curr_prog_perk2 = 0;
+        $("" + this.activator).on('click', function () {
+            var check;
+            check = $("#progPerk2").attr("aria-valuenow");
+            curr_prog_perk2 = +check;
+            if (curr_prog_perk2 >= 100) {
+                curr_prog_perk2 = 0;
+                $("#progPerk2").css("width", curr_prog_perk2 + "%").attr("aria-valuenow", curr_prog_perk2);
+            }
+        });
+    };
+    return StongAttackOneTarget;
+}(Move));
+var StongAttackAll = /** @class */ (function (_super) {
+    __extends(StongAttackAll, _super);
+    function StongAttackAll(name, description, activator) {
+        var _this = _super.call(this, name, description, activator) || this;
+        _this.name = name;
+        _this.description = description;
+        _this.activator = activator;
+        return _this;
+    }
+    StongAttackAll.prototype.Greet = function () {
+        $('#Perk3Title').html("" + this.name);
+        $('#Perk3Desc').html("" + this.description);
+    };
+    StongAttackAll.prototype.Execute = function ( /*targets: Unit[]*/) {
+        var curr_prog_perk3 = 0;
+        $("" + this.activator).on('click', function () {
+            var check;
+            check = $("#progPerk3").attr("aria-valuenow");
+            curr_prog_perk3 = +check;
+            if (curr_prog_perk3 >= 100) {
+                curr_prog_perk3 = 0;
+                $("#progPerk3").css("width", curr_prog_perk3 + "%").attr("aria-valuenow", curr_prog_perk3);
+            }
+        });
+    };
+    return StongAttackAll;
+}(Move));
+var SetOnFire = /** @class */ (function (_super) {
+    __extends(SetOnFire, _super);
+    function SetOnFire(name, description, activator) {
+        var _this = _super.call(this, name, description, activator) || this;
+        _this.name = name;
+        _this.description = description;
+        _this.activator = activator;
+        return _this;
+    }
+    SetOnFire.prototype.Greet = function () {
+        $('#Perk3Title').html("" + this.name);
+        $('#Perk3Desc').html("" + this.description);
+    };
+    SetOnFire.prototype.Execute = function ( /*targets: Unit[]*/) {
+        var curr_prog_perk3 = 0;
+        $("" + this.activator).on('click', function () {
+            var check;
+            check = $("#progPerk3").attr("aria-valuenow");
+            curr_prog_perk3 = +check;
+            if (curr_prog_perk3 >= 100) {
+                curr_prog_perk3 = 0;
+                $("#progPerk3").css("width", curr_prog_perk3 + "%").attr("aria-valuenow", curr_prog_perk3);
+            }
+        });
+    };
+    return SetOnFire;
+}(Move));
 var Character = /** @class */ (function (_super) {
     __extends(Character, _super);
     function Character(name, MaxHP, MaxMana, /* protected selector: string,*/ motto) {
@@ -202,13 +349,6 @@ var Character = /** @class */ (function (_super) {
         //...
     };
     Character.prototype.GetPerks = function () {
-        var rand = 1;
-        if (rand == 1) {
-            var perkID = '#Perk1Use';
-            var firstPerk = new Sacrifice('Sacrifice', 'Lose HP, get Mana', "" + perkID);
-            firstPerk.Greet();
-            firstPerk.Execute();
-        }
     };
     return Character;
 }(Unit));
@@ -222,6 +362,29 @@ var Johnny = /** @class */ (function (_super) {
     }
     Johnny.prototype.ActSelected = function () {
         //...
+    };
+    Johnny.prototype.GetPerks = function () {
+        this.GetFirstPerk();
+        this.GetSecondPerk();
+        this.GetThirdPerk();
+    };
+    Johnny.prototype.GetFirstPerk = function () {
+        var perkID = '#Perk1Use';
+        var firstPerk = new Sacrifice('Sacrifice', 'Lose HP, get Mana', "" + perkID);
+        firstPerk.Greet();
+        firstPerk.Execute();
+    };
+    Johnny.prototype.GetSecondPerk = function () {
+        var perkID = '#Perk2Use';
+        var SecondPerk = new StongAttackOneTarget('StrongAttackAgainstOne', 'StrongAttackAgainstOne', "" + perkID);
+        SecondPerk.Greet();
+        SecondPerk.Execute();
+    };
+    Johnny.prototype.GetThirdPerk = function () {
+        var perkID = '#Perk3Use';
+        var ThirdPerk = new SetOnFire('SetOnFire', 'SetOnFire', "" + perkID);
+        ThirdPerk.Greet();
+        ThirdPerk.Execute();
     };
     return Johnny;
 }(Character));
@@ -239,6 +402,29 @@ var Token = /** @class */ (function (_super) {
     Token.prototype.ActDeselected = function () {
         //...
     };
+    Token.prototype.GetPerks = function () {
+        this.GetFirstPerk();
+        this.GetSecondPerk();
+        this.GetThirdPerk();
+    };
+    Token.prototype.GetFirstPerk = function () {
+        var perkID = '#Perk1Use';
+        var firstPerk = new SelfHealing('SelfHealing', 'Lose Mana, get HP', "" + perkID);
+        firstPerk.Greet();
+        firstPerk.Execute();
+    };
+    Token.prototype.GetSecondPerk = function () {
+        var perkID = '#Perk2Use';
+        var SecondPerk = new StongAttackOneTarget('StrongAttackAgainstOne', 'StrongAttackAgainstOne', "" + perkID);
+        SecondPerk.Greet();
+        SecondPerk.Execute();
+    };
+    Token.prototype.GetThirdPerk = function () {
+        var perkID = '#Perk3Use';
+        var ThirdPerk = new SetOnFire('StrongAttackAgainstOne', 'StrongAttackAgainstOne', "" + perkID);
+        ThirdPerk.Greet();
+        ThirdPerk.Execute();
+    };
     return Token;
 }(Character));
 var BattleJoe = /** @class */ (function (_super) {
@@ -254,6 +440,29 @@ var BattleJoe = /** @class */ (function (_super) {
     };
     BattleJoe.prototype.ActDeselected = function () {
         //...
+    };
+    BattleJoe.prototype.GetPerks = function () {
+        this.GetFirstPerk();
+        this.GetSecondPerk();
+        this.GetThirdPerk();
+    };
+    BattleJoe.prototype.GetFirstPerk = function () {
+        var perkID = '#Perk1Use';
+        var firstPerk = new Sacrifice('Sacrifice', 'Lose HP, get Mana', "" + perkID);
+        firstPerk.Greet();
+        firstPerk.Execute();
+    };
+    BattleJoe.prototype.GetSecondPerk = function () {
+        var perkID = '#Perk2Use';
+        var SecondPerk = new StongAttackOneTarget('StrongAttackAgainstOne', 'StrongAttackAgainstOne', "" + perkID);
+        SecondPerk.Greet();
+        SecondPerk.Execute();
+    };
+    BattleJoe.prototype.GetThirdPerk = function () {
+        var perkID = '#Perk3Use';
+        var ThirdPerk = new StongAttackAll('StrongAttackAgainstAll', 'StrongAttackAgainstAll', "" + perkID);
+        ThirdPerk.Greet();
+        ThirdPerk.Execute();
     };
     return BattleJoe;
 }(Character));
