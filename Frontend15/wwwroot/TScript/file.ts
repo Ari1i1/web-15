@@ -3,6 +3,7 @@
     let chosenFighter: string;
     let player: Character;
     let game: Game;
+    let isStarted: boolean = false;
 
     $('#Johnny').on('click', function () {
         if (isChosen != true) {
@@ -13,7 +14,9 @@
         else {
             jQuery('#Message*').html("<p>Hi! I'm Johnny!</p>");
         }
-        add_frameJohnny();
+        Johnny.ActSelected();
+        BattleJoe.ActDeselected();
+        Token.ActDeselected();
         document.getElementById("Message").style.color = 'black';
         chosenFighter = 'Johnny';
         $("#SelectButton").collapse('show');
@@ -28,8 +31,9 @@
         else {
             jQuery('#Message*').html("<p>Hi! I'm Battle Joe!</p>");
         }
-        add_frameBattleJoe();
-        document.getElementById("Message").style.color = 'red';
+        BattleJoe.ActSelected();
+        Token.ActDeselected();
+        Johnny.ActDeselected();
         chosenFighter = 'BattleJoe';
         $("#SelectButton").collapse('show');
     });
@@ -44,7 +48,8 @@
             jQuery('#Message*').html("<p>Hi! I'm Token!</p>");
         }
         Token.ActSelected();
-        document.getElementById("Message").style.color = 'black';
+        Johnny.ActDeselected();
+        BattleJoe.ActDeselected();
         chosenFighter = 'Token';
         $("#SelectButton").collapse('show');
     });
@@ -64,44 +69,37 @@
         game.StartGame();
     });
 
-    $(function () {
-        $("#EnemyMoveButton").attr('disabled', 'disabled');
-        $('#Perk1Use').attr('disabled', 'disabled');
-        $('#Perk2Use').attr('disabled', 'disabled');
-        $('#Perk3Use').attr('disabled', 'disabled');
-        $('#PlayerButton').on('click', function () {
-            $("#PlayerButton").attr('disabled', 'disabled');
-            $("#EnemyMoveButton").removeAttr('disabled');
-            game.isHeroTurn = true;
-            game.NextStep();
-        });
-        $('#EnemyMoveButton').on('click', function () {
-            $("#EnemyMoveButton").attr('disabled', 'disabled');
-            $('#Perk1Use').attr('disabled', 'disabled');
-            $('#Perk2Use').attr('disabled', 'disabled');
-            $('#Perk3Use').attr('disabled', 'disabled');
-            game.isHeroTurn = false;
-            game.NextStep();
-            $("#PlayerButton").removeAttr('disabled');
-            for (let i: number = 0; i < game.Player.MoveSet.length; i++) {
-                if (game.Player.MoveSet[i].rediness == 100) {
-                    if (i == 0) {
-                        $('#Perk1Use').removeAttr('disabled');
-                        game.Player.MoveSet[0].Execute(game.Player, game.Enemies);
-                    }
-                    else if (i == 1) {
-                        $('#Perk2Use').removeAttr('disabled');
-                        game.Player.MoveSet[1].Execute(game.Player, game.Enemies);
-                    }
-                    else if (i == 2) {
-                        $('#Perk3Use').removeAttr('disabled');
-                        game.Player.MoveSet[2].Execute(game.Player, game.Enemies);
-                    }
-                }
-            }
-        });
+    $('#PlayerButton').on('click', function () {
+        game.isHeroTurn = true;
+        game.isPerkChosen = false;
+        game.NextStep();
     });
 
+    $('#EnemyMoveButton').on('click', function () {
+        game.isHeroTurn = false;
+        game.NextStep();
+    });
+
+    $('#Perk1Use').on('click', function () {
+        game.isHeroTurn = true;
+        game.isPerkChosen = true;
+        game.ChosenPerk = game.Player.MoveSet[0];
+        game.NextStep();
+    });
+
+    $('#Perk2Use').on('click', function () {
+        game.isHeroTurn = true;
+        game.isPerkChosen = true;
+        game.ChosenPerk = game.Player.MoveSet[1];
+        game.NextStep();
+    });
+
+    $('#Perk3Use').on('click', function () {
+        game.isHeroTurn = true;
+        game.isPerkChosen = true;
+        game.ChosenPerk = game.Player.MoveSet[2];
+        game.NextStep();
+    });
 
     class Game {
         constructor(public Player: Character) {
@@ -121,35 +119,68 @@
             this.Enemies[0].Greet();
             this.Enemies[0].GetPerks();
 
+            this.Render();
         }
-        public isHeroTurn: boolean = true;
 
+        protected _isHeroTurn: boolean = true;
+        public get isHeroTurn(): boolean {
+            return this._isHeroTurn;
+        }
+        public set isHeroTurn(isIt: boolean) {
+            this._isHeroTurn = isIt;
+        }
+
+        protected _isPerkChosen: boolean = true;
+        public get isPerkChosen(): boolean {
+            return this._isPerkChosen;
+        }
+        public set isPerkChosen(isIt: boolean) {
+            this._isPerkChosen = isIt;
+        }
+
+        protected _ChosenPerk: Move;
+        public get ChosenPerk(): Move {
+            return this._ChosenPerk;
+        }
+        public set ChosenPerk(chosen: Move) {
+            this._ChosenPerk = chosen;
+        }
         public NextStep(): void {
             for (let i: number = 0; i < this.Player.MoveSet.length; i++) {
                 this.Player.MoveSet[i].ChangeProgress(this.Player);
             }
+            
             if (this.isHeroTurn == true) {
-                let isExecuted: boolean = false;
-                for (let i: number = 0; i < this.Player.MoveSet.length; i++) {
-                    if (this.Player.MoveSet[i].rediness == 100) {
-                        this.Player.MoveSet[i].Execute(this.Player, this.Enemies);
-                        isExecuted = true;
-                    }
-                }
-                if (isExecuted == false)
+                if (this.isPerkChosen == false)
                     this.Player.RegularAttack(this.Player, this.Enemies[0]);
+                else {
+                    this.ChosenPerk.Execute(this.Player, this.Enemies);
+                    this.isPerkChosen = false;
+                }
             }
             else {
                 let isExecuted: boolean = false;
                 for (let i: number = 0; i < this.Enemies[0].MoveSet.length; i++) {
-                    if (this.Enemies[0].MoveSet[i].rediness == 100) {
+                    if (this.Enemies[0].MoveSet[i].readiness == 100) {
                         this.Enemies[0].MoveSet[i].Execute(this.Player, this.Enemies);
+                        isExecuted = true;
                     }
                 }
                 if (isExecuted == false)
                     this.Enemies[0].RegularAttack(this.Enemies[0], this.Player);
             }
+            this.Render();
         }
+        public Render(): void {
+            $("#progPerk1").css("width", player.MoveSet[0].readiness + "%").attr("aria-valuenow", player.MoveSet[0].readiness)
+            $("#progPerk2").css("width", player.MoveSet[1].readiness + "%").attr("aria-valuenow", player.MoveSet[1].readiness)
+            $("#progPerk3").css("width", player.MoveSet[2].readiness + "%").attr("aria-valuenow", player.MoveSet[2].readiness)
+            $("#ManaBar").css("width", player.mana + "%").attr("aria-valuenow", player.mana);
+            $("#HPBar").css("width", player.hp + "%").attr("aria-valuenow", player.hp);
+            $("#EnemyManaBar").css("width", this.Enemies[0].mana + "%").attr("aria-valuenow", this.Enemies[0].mana)
+            $("#EnemyHPBar").css("width", this.Enemies[0].hp + "%").attr("aria-valuenow", this.Enemies[0].hp)
+        }
+
     }
 
     class Unit {
@@ -177,23 +208,22 @@
 
         }
         public RegularAttack(player: Unit, target: Unit): void {
-            target.hp -= 10;
-            player.mana += 10;
             if (player instanceof Character) {
                 if (target.hp >= 0) {
-                    $("#EnemyHPBar").css("width", target.hp + "%").attr("aria-valuenow", target.hp)
+                    target.hp -= 10;
+                    player.mana += 10;
+                   // game.NextStep();
                 }
                 else if (target.hp < 0) { //kill enemy
-                    /*target[0].hp = 0;
-                    $("#EnemyHPBar").css("width", target[0].hp + "%").attr("aria-valuenow", target[0].hp)
                     delete target[0]
-                    target.length--*/
+                    //target.length--
                 }
-                $("#ManaBar").css("width", player.mana + "%").attr("aria-valuenow", player.mana)
             }
             else {
                 if (target.hp >= 0) {
-                    $("#HPBar").css("width", target.hp + "%").attr("aria-valuenow", target.hp)
+                    target.hp -= 10;
+                    player.mana += 10;
+                    //game.NextStep();
                 }
                 else if (target.hp < 0) { //kill enemy
                     /*target[0].hp = 0;
@@ -201,7 +231,6 @@
                     delete target[0]
                     target.length--*/
                 }
-                $("#EnemyManaBar").css("width", player.mana + "%").attr("aria-valuenow", player.mana)
             }
         }
     }
@@ -220,23 +249,21 @@
     }
     class Move {
         constructor(public name: string, public description: string) {
-            //...
         }
         public Greet(): void {
         }
         public Execute(player: Character, targets: Unit[]): void {
-            //...
         }
         public ChangeProgress(player: Character): void {
-
         }
         private _rediness: number;
-        public get rediness(): number {
+        public get readiness(): number {
             return this._rediness;
         }
-        public set rediness(n: number) {
+        public set readiness(n: number) {
             this._rediness = n;
         }
+        public isChosen: boolean;
     }
 
     //Пример способности
@@ -247,28 +274,25 @@
         public Greet(): void {
             $('#Perk1Title').html(`${this.name}`);
             $('#Perk1Desc').html(`${this.description}`);
-            $('#EnemyPerks #Perk1Title').html(`${this.name}`);
-            $('#EnemyPerks #Perk1Desc').html(`${this.description}`);
+            /*$('#EnemyPerks #Perk1Title').html(`${this.name}`);
+            $('#EnemyPerks #Perk1Desc').html(`${this.description}`);*/
         }
         public Execute(player: Character, targets: Unit[]): void {
             $('#Perk1Use').on('click', function () {
-                if (player.MoveSet[0].rediness >= 100) {
-                    player.MoveSet[0].rediness = 0;
-                    $("#progPerk1").css("width", player.MoveSet[0].rediness + "%").attr("aria-valuenow", player.MoveSet[0].rediness)
+                if (player.MoveSet[0].readiness >= 100) {
+                    player.MoveSet[0].readiness = 0;
                 }
             });
         }
         public ChangeProgress(player: Character): void {
-            let curr_prog_enemy_attack: number = 0;
-            player.MoveSet[0].rediness += 20;
-            if (player.MoveSet[0].rediness <= 100) {
-                $("#progPerk1").css("width", player.MoveSet[0].rediness + "%").attr("aria-valuenow", player.MoveSet[0].rediness)
+           // let curr_prog_enemy_attack: number = 0;
+            if (player.MoveSet[0].readiness < 100) {
+                player.MoveSet[0].readiness += 20;
             }
-            else if (player.MoveSet[0].rediness > 100) {
-                player.MoveSet[0].rediness = 100;
-                $("#progPerk1").css("width", player.MoveSet[0].rediness + "%").attr("aria-valuenow", player.MoveSet[0].rediness)
+            else if (player.MoveSet[0].readiness >= 100) {
+                player.MoveSet[0].readiness = 100;
             }
-            curr_prog_enemy_attack = +$("#EnemyPerks #progPerk1").attr("aria-valuenow");
+            /*curr_prog_enemy_attack = +$("#EnemyPerks #progPerk1").attr("aria-valuenow");
             curr_prog_enemy_attack += 20;
             if (curr_prog_enemy_attack <= 100) {
                 $("#EnemyPerks #progPerk1").css("width", curr_prog_enemy_attack + "%").attr("aria-valuenow", curr_prog_enemy_attack)
@@ -276,7 +300,7 @@
             else if (curr_prog_enemy_attack > 100) {
                 curr_prog_enemy_attack = 100;
                 $("#EnemyPerks #progPerk1").css("width", curr_prog_enemy_attack + "%").attr("aria-valuenow", curr_prog_enemy_attack)
-            }
+            }*/
         }
     }
     class SelfHealing extends Move {
@@ -289,26 +313,21 @@
         }
         public Execute(player: Character, targets: Unit[]): void {
             $('#Perk1Use').on('click', function () {
-                if (player.MoveSet[0].rediness >= 100) {
-                    player.MoveSet[0].rediness = 0;
-                    $("#progPerk1").css("width", player.MoveSet[0].rediness + "%").attr("aria-valuenow", player.MoveSet[0].rediness);
+                if (player.MoveSet[0].readiness >= 100) {
+                    player.MoveSet[0].readiness = 0;
                     if (player.mana >= 10) {
-                        player.mana -= 10;
-                        $("#ManaBar").css("width", player.mana + "%").attr("aria-valuenow", player.mana);
+                        player.mana -= 10; 
                         player.hp += 10;
-                        $("#HPBar").css("width", player.hp + "%").attr("aria-valuenow", player.hp);
                     }
                 }
             });
         }
         public ChangeProgress(player: Character): void {
-            player.MoveSet[0].rediness += 25;
-            if (player.MoveSet[0].rediness < 100) {
-                $("#progPerk1").css("width", player.MoveSet[0].rediness + "%").attr("aria-valuenow", player.MoveSet[0].rediness)
+            if (player.MoveSet[0].readiness < 100) {
+                player.MoveSet[0].readiness += 25;
             }
-            else if (player.MoveSet[0].rediness >= 100) {
-                player.MoveSet[0].rediness = 100;
-                $("#progPerk1").css("width", player.MoveSet[0].rediness + "%").attr("aria-valuenow", player.MoveSet[0].rediness)
+            else if (player.MoveSet[0].readiness >= 100) {
+                player.MoveSet[0].readiness = 100;
             }
         }
     }
@@ -316,42 +335,39 @@
         constructor(public name: string, public description: string) {
             super(name, description);
         }
+        
         public Greet(): void {
             $('#Perk2Title').html(`${this.name}`);
             $('#Perk2Desc').html(`${this.description}`);
             $('#EnemyPerks #Perk2Title').html(`${this.name}`);
             $('#EnemyPerks #Perk2Desc').html(`${this.description}`);
         }
+
         public Execute(player: Character, targets: Unit[]): void {
-            $('#Perk2Use').on('click', function () {
-                player.MoveSet[1].rediness = 0;
-                player.mana -= 35;
-                $("#progPerk2").css("width", player.MoveSet[1].rediness + "%").attr("aria-valuenow", player.MoveSet[1].rediness);
-                targets[0].hp -= 35;
+            if (this.readiness == 100) {
                 if (targets[0].hp >= 0) {
-                    $("#EnemyHPBar").css("width", targets[0].hp + "%").attr("aria-valuenow", targets[0].hp);
+                    player.MoveSet[1].readiness = 0;
+                    player.mana -= 35;
+                    targets[0].hp -= 35;
                 }
                 else if (targets[0].hp < 0) { //kill enemy
                     targets[0].hp = 0;
-                    $("#EnemyHPBar").css("width", targets[0].hp + "%").attr("aria-valuenow", targets[0].hp);
                     delete targets[0];
                     targets.length--;
                 }
-                $("#ManaBar").css("width", player.mana + "%").attr("aria-valuenow", player.mana);
-
-            });
+                game.NextStep();
+            }
         }
         public ChangeProgress(player: Character): void {
             let curr_prog_enemy_attack: number = 0;
-            player.MoveSet[1].rediness += 30;
-            if (player.MoveSet[1].rediness <= 100) {
-                $("#progPerk2").css("width", player.MoveSet[1].rediness + "%").attr("aria-valuenow", player.MoveSet[1].rediness)
+            player.MoveSet[1].readiness += 30;
+            if (player.MoveSet[1].readiness < 100) {
+                player.MoveSet[1].readiness += 30;
             }
-            else if (player.MoveSet[1].rediness > 100) {
-                player.MoveSet[1].rediness = 100;
-                $("#progPerk2").css("width", player.MoveSet[1].rediness + "%").attr("aria-valuenow", player.MoveSet[1].rediness)
+            else if (player.MoveSet[1].readiness >= 100) {
+                player.MoveSet[1].readiness = 100;
             }
-            curr_prog_enemy_attack = +$("#EnemyPerks #progPerk2").attr("aria-valuenow");
+            /*curr_prog_enemy_attack = +$("#EnemyPerks #progPerk2").attr("aria-valuenow");
             curr_prog_enemy_attack += 20;
             if (curr_prog_enemy_attack <= 100) {
                 $("#EnemyPerks #progPerk2").css("width", curr_prog_enemy_attack + "%").attr("aria-valuenow", curr_prog_enemy_attack)
@@ -359,7 +375,7 @@
             else if (curr_prog_enemy_attack > 100) {
                 curr_prog_enemy_attack = 100;
                 $("#EnemyPerks #progPerk2").css("width", curr_prog_enemy_attack + "%").attr("aria-valuenow", curr_prog_enemy_attack)
-            }
+            }*/
         }
     }
     class StongAttackAll extends Move {
@@ -372,20 +388,18 @@
         }
         public Execute(player: Character, targets: Unit[]): void {
             $('#Perk3Use').on('click', function () {
-                if (player.MoveSet[2].rediness >= 100) {
-                    player.MoveSet[2].rediness = 0;
-                    $("#progPerk3").css("width", player.MoveSet[2].rediness + "%").attr("aria-valuenow", player.MoveSet[2].rediness)
+                if (player.MoveSet[2].readiness >= 100) {
+                    player.MoveSet[2].readiness = 0;
+                    $("#progPerk3").css("width", player.MoveSet[2].readiness + "%").attr("aria-valuenow", player.MoveSet[2].readiness)
                 }
             });
         }
         public ChangeProgress(player: Character): void {
-            player.MoveSet[2].rediness += 8;
-            if (player.MoveSet[2].rediness <= 100) {
-                $("#progPerk3").css("width", player.MoveSet[2].rediness + "%").attr("aria-valuenow", player.MoveSet[2].rediness)
+            if (player.MoveSet[2].readiness < 100) {
+                player.MoveSet[2].readiness += 8;
             }
-            else if (player.MoveSet[2].rediness > 100) {
-                player.MoveSet[2].rediness = 100;
-                $("#progPerk3").css("width", player.MoveSet[2].rediness + "%").attr("aria-valuenow", player.MoveSet[2].rediness)
+            else if (player.MoveSet[2].readiness >= 100) {
+                player.MoveSet[2].readiness = 100;
             }
         }
     }
@@ -399,20 +413,18 @@
         }
         public Execute(player: Character, targets: Unit[]): void {
             $('#Perk3Use').on('click', function () {
-                if (player.MoveSet[2].rediness >= 100) {
-                    player.MoveSet[2].rediness = 0;
-                    $("#progPerk3").css("width", player.MoveSet[2].rediness + "%").attr("aria-valuenow", player.MoveSet[2].rediness)
+                if (player.MoveSet[2].readiness >= 100) {
+                    player.MoveSet[2].readiness = 0;
+                    $("#progPerk3").css("width", player.MoveSet[2].readiness + "%").attr("aria-valuenow", player.MoveSet[2].readiness)
                 }
             });
         }
         public ChangeProgress(player: Character): void {
-            player.MoveSet[2].rediness += 15;
-            if (player.MoveSet[2].rediness <= 100) {
-                $("#progPerk3").css("width", player.MoveSet[2].rediness + "%").attr("aria-valuenow", player.MoveSet[2].rediness)
+            if (player.MoveSet[2].readiness <= 100) {
+                player.MoveSet[2].readiness += 15;
             }
-            else if (player.MoveSet[2].rediness > 100) {
-                player.MoveSet[2].rediness = 100;
-                $("#progPerk3").css("width", player.MoveSet[2].rediness + "%").attr("aria-valuenow", player.MoveSet[2].rediness)
+            else if (player.MoveSet[2].readiness > 100) {
+                player.MoveSet[2].readiness = 100;
             }
         }
     }
@@ -447,8 +459,12 @@
             super(name, MaxHP, MaxMana, motto);
         }
 
-        public ActSelected(): void {
-            //...
+        public static ActSelected(): void {
+            document.getElementById('Johnny').style.border = "2px solid blue";
+            $("#Message").css('color', 'red');
+        }
+        public static ActDeselected(): void {
+            document.getElementById('Johnny').style.border = "none";
         }
         public GetPerks(): void {
 
@@ -458,17 +474,17 @@
         }
         private GetFirstPerk(): void {
             this.MoveSet[0] = new Sacrifice('Sacrifice', 'Lose HP, get Mana');
-            this.MoveSet[0].rediness = 0;
+            this.MoveSet[0].readiness = 0;
             this.MoveSet[0].Greet();
         }
         private GetSecondPerk(): void {
             this.MoveSet[1] = new StongAttackOneTarget('StrongAttackAgainstOne', 'StrongAttackAgainstOne');
-            this.MoveSet[1].rediness = 0;
+            this.MoveSet[1].readiness = 0;
             this.MoveSet[1].Greet();
         }
         private GetThirdPerk(): void {
             this.MoveSet[2] = new SetOnFire('SetOnFire', 'SetOnFire');
-            this.MoveSet[1].rediness = 0;
+            this.MoveSet[1].readiness = 0;
             this.MoveSet[2].Greet();
         }
 
@@ -479,15 +495,13 @@
         }
 
         public static ActSelected(): void {
-            if (isChosen == true) {
-                document.getElementById('Johnny').style.border = "none";
-                document.getElementById('BattleJoe').style.border = "none";
-            }
             document.getElementById('Token').style.border = "2px solid blue";
             document.getElementById('Token').style.background = "gray";
+            $("#Message").css('color', 'black');
         }
         public static ActDeselected(): void {
-            //...
+            document.getElementById('Token').style.border = "none";
+            document.getElementById('Token').style.background = "none";
         }
         public GetPerks(): void {
 
@@ -497,17 +511,17 @@
         }
         private GetFirstPerk(): void {
             this.MoveSet[0] = new SelfHealing('SelfHealing', 'Lose Mana, get HP');
-            this.MoveSet[0].rediness = 0;
+            this.MoveSet[0].readiness = 0;
             this.MoveSet[0].Greet();
         }
         private GetSecondPerk(): void {
             this.MoveSet[1] = new StongAttackOneTarget('StrongAttackAgainstOne', 'StrongAttackAgainstOne');
-            this.MoveSet[1].rediness = 0;
+            this.MoveSet[1].readiness = 0;
             this.MoveSet[1].Greet();
         }
         private GetThirdPerk(): void {
             this.MoveSet[2] = new SetOnFire('SetOnFire', 'SetOnFire');
-            this.MoveSet[2].rediness = 0;
+            this.MoveSet[2].readiness = 0;
             this.MoveSet[2].Greet();
         }
     }
@@ -516,11 +530,12 @@
             super(name, MaxHP, MaxMana, motto);
         }
 
-        public ActSelected(): void {
-            //...
+        public static ActSelected(): void {
+            document.getElementById('BattleJoe').style.border = "2px solid blue";
+            $("#Message").css('color', 'red');
         }
-        public ActDeselected(): void {
-            //...
+        public static ActDeselected(): void {
+            document.getElementById('BattleJoe').style.border = "none";
         }
         public GetPerks(): void {
 
@@ -530,17 +545,17 @@
         }
         private GetFirstPerk(): void {
             this.MoveSet[0] = new Sacrifice('Sacrifice', 'Lose HP, get Mana');
-            this.MoveSet[0].rediness = 0;
+            this.MoveSet[0].readiness = 0;
             this.MoveSet[0].Greet();
         }
         private GetSecondPerk(): void {
             this.MoveSet[1] = new StongAttackOneTarget('StrongAttackAgainstOne', 'StrongAttackAgainstOne');
-            this.MoveSet[1].rediness = 0;
+            this.MoveSet[1].readiness = 0;
             this.MoveSet[1].Greet();
         }
         private GetThirdPerk(): void {
             this.MoveSet[2] = new StongAttackAll('StrongAttackAgainstAll', 'StrongAttackAgainstAll');
-            this.MoveSet[2].rediness = 0;
+            this.MoveSet[2].readiness = 0;
             this.MoveSet[2].Greet();
         }
     }
@@ -582,23 +597,6 @@
         /*public get Moves(): Move[] {
             // вернуть набор магических перков
         }*/
-    }
-
-    function add_frameJohnny() {
-        if (isChosen == true) {
-            document.getElementById('BattleJoe').style.border = "none";
-            document.getElementById('Token').style.border = "none";
-            document.getElementById('Token').style.background = "none";
-        }
-        document.getElementById('Johnny').style.border = "2px solid blue";
-    }
-    function add_frameBattleJoe() {
-        if (isChosen == true) {
-            document.getElementById('Johnny').style.border = "none";
-            document.getElementById('Token').style.border = "none";
-            document.getElementById('Token').style.background = "none";
-        }
-        document.getElementById('BattleJoe').style.border = "2px solid blue";
     }
 
 });
